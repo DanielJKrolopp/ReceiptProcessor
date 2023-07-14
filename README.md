@@ -1,7 +1,8 @@
 # Daniel Krolopp's Receipt Processor
 
 ### Usage
-Assuming you have Docker installed, you can run my submission with
+Assuming you have Docker installed, you can run my submission by
+cloning this repository and then executing
 `docker run --rm -p 8080:8080 -it $(docker build -q .)` from
 within the top-level directory. This will bring up the container and 
 remove it automatically when you are finished. You can then make any 
