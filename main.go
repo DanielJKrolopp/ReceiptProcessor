@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/google/uuid"
 	"math"
 	"net/http"
@@ -13,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// The lookup between ids and points
 var db = make(map[string]int)
 
 type Item struct {
@@ -46,9 +46,8 @@ func setupRouter() *gin.Engine {
 		err := c.Bind(&receipt)
 
 		if err == nil {
-			fmt.Println(receipt)
 			id := uuid.New().String()
-			db[id], err = calculatePoints(&receipt)
+			db[id], err = calculatePoints(receipt)
 
 			if err == nil {
 				c.JSON(http.StatusOK, Id{id})
@@ -57,7 +56,6 @@ func setupRouter() *gin.Engine {
 			}
 
 		} else {
-			fmt.Println(err)
 			c.Status(http.StatusBadRequest)
 		}
 	})
@@ -149,7 +147,7 @@ func calculatePurchaseTime(purchaseTime string) (int, error) {
 	return -1, err
 }
 
-func calculatePoints(receipt *Receipt) (int, error) {
+func calculatePoints(receipt Receipt) (int, error) {
 	points := 0
 	retailer := receipt.Retailer
 	total := receipt.Total
@@ -159,7 +157,6 @@ func calculatePoints(receipt *Receipt) (int, error) {
 
 	// Add points based on the retailer name
 	points += calculateRetailer(retailer)
-	fmt.Println(points, "points")
 
 	// Add points based on the total field of the receipt
 	totalFloat, err := total.Float64()
@@ -168,11 +165,9 @@ func calculatePoints(receipt *Receipt) (int, error) {
 	} else {
 		return -1, err
 	}
-	fmt.Println(points, "points")
 
 	// Add points based on the number of items on the receipt
 	points += calculateEveryTwo(len(items))
-	fmt.Println(points, "points")
 
 	// Add points based on trimmed item descriptions
 	trimmedLengthPoints, err := calculateTrimmedLength(items)
@@ -182,7 +177,6 @@ func calculatePoints(receipt *Receipt) (int, error) {
 		println(err)
 		return -1, err
 	}
-	fmt.Println(points, "points")
 
 	// Add points based on purchase date
 	purchaseDatePoints, err := calculateOddPurchaseDate(purchaseDate)
@@ -192,7 +186,6 @@ func calculatePoints(receipt *Receipt) (int, error) {
 		println(err)
 		return -1, err
 	}
-	fmt.Println(points, "points")
 
 	// Add points based on purchase time
 	purchaseTimePoints, err := calculatePurchaseTime(purchaseTime)
@@ -202,7 +195,6 @@ func calculatePoints(receipt *Receipt) (int, error) {
 		println(err)
 		return -1, err
 	}
-	fmt.Println(points, "points")
 
 	return points, nil
 }
