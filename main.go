@@ -15,19 +15,13 @@ import (
 // The lookup between ids and points
 var db = make(map[string]int)
 
+// Item represents an item within the receipt
 type Item struct {
 	ShortDescription string      `json:"shortDescription" binding:"required"`
 	Price            json.Number `json:"price" binding:"required,numeric,gte=0"`
 }
 
-type Id struct {
-	Id string `json:"id"`
-}
-
-type Points struct {
-	Points int `json:"points"`
-}
-
+// Receipt represents the receipt being POSTed to our service
 type Receipt struct {
 	Retailer     string      `json:"retailer" binding:"required"`
 	PurchaseDate string      `json:"purchaseDate" binding:"required"`
@@ -36,12 +30,22 @@ type Receipt struct {
 	Total        json.Number `json:"total" binding:"required,numeric,gte=0"`
 }
 
+// Id represents the ID returned after successfully POSTing a receipt
+type Id struct {
+	Id string `json:"id"`
+}
+
+// Points represents the points returned after a successful GET request
+type Points struct {
+	Points int `json:"points"`
+}
+
+// Set up the router and create the endpoints
 func setupRouter() *gin.Engine {
 	r := gin.Default()
 	receipts := r.Group("/receipts")
 
 	receipts.POST("/process", func(c *gin.Context) {
-
 		var receipt Receipt
 		err := c.Bind(&receipt)
 
@@ -54,7 +58,6 @@ func setupRouter() *gin.Engine {
 			} else {
 				c.Status(http.StatusBadRequest)
 			}
-
 		} else {
 			c.Status(http.StatusBadRequest)
 		}
@@ -147,6 +150,7 @@ func calculatePurchaseTime(purchaseTime string) (int, error) {
 	return -1, err
 }
 
+// Calculate the points given a receipt. Uses several calls to other functions to calculate each rule
 func calculatePoints(receipt Receipt) (int, error) {
 	points := 0
 	retailer := receipt.Retailer
@@ -199,6 +203,7 @@ func calculatePoints(receipt Receipt) (int, error) {
 	return points, nil
 }
 
+// The main method, serving the router on port 8080
 func main() {
 	r := setupRouter()
 	r.Run(":8080")
